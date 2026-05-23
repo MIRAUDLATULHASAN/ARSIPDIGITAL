@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsip Berkas - Arsip Digital MI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%); }
+        
+        /* Sidebar Styles */
+        .sidebar-gradient { background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%); }
+        .nav-item { color: rgba(255,255,255,0.8); transition: all 0.3s ease; border-radius: 12px; margin: 4px 0; }
+        .nav-item:hover { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .nav-item.active { background: rgba(255,255,255,0.25); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Button Styles */
+        .btn-gradient { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(245,87,108,0.4); }
+        .btn-outline { border: 1.5px solid #fbcfe8; background: white; transition: all 0.3s ease; }
+        .btn-outline:hover { border-color: #f5576c; background: #fdf2f8; }
+        
+        /* Folder Card */
+        .folder-card { cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: white; border-radius: 1rem; padding: 1.25rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #fce7f3; }
+        .folder-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px -12px rgba(245,87,108,0.2); border-color: #fbcfe8; background: linear-gradient(135deg, #fff5f8 0%, #fff 100%); }
+        
+        /* File Item */
+        .file-item { transition: all 0.2s ease; border-radius: 12px; }
+        .file-item:hover { background: #fdf2f8; transform: translateX(4px); }
+        
+        /* Category Badge */
+        .category-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .category-raport { background: #10b98120; color: #065f46; }
+        .category-administrasi { background: #3b82f620; color: #1e40af; }
+        .category-surat { background: #f59e0b20; color: #92400e; }
+        .category-data-guru { background: #8b5cf620; color: #5b21b6; }
+        .category-data-siswa { background: #ec489a20; color: #be185d; }
+        .category-dokumen { background: #06b6d420; color: #155e75; }
+        
+        /* Dropzone */
+        .dropzone { border: 2px dashed #fbcfe8; border-radius: 1rem; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: #fef2f8; }
+        .dropzone.drag-over { background: #fce7f3; border-color: #f5576c; transform: scale(1.01); }
+        
+        /* Skeleton Loading */
+        .skeleton-card { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 1rem; height: 110px; }
+        .skeleton-row { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 56px; margin-bottom: 8px; border-radius: 12px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Modal */
+        .modal-show { animation: modalFadeIn 0.3s ease-out; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Progress Bar */
+        .progress-bar { transition: width 0.3s ease; }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; z-index: 1000; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .ml-72 { margin-left: 0; }
+            .folder-card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <!-- ================================================== -->
+        <!-- SIDEBAR -->
+        <!-- ================================================== -->
+        <div id="sidebar" class="sidebar-gradient w-72 fixed h-full z-20 transition-all duration-300 shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-white/20">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="archive" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">Arsip Digital</h2>
+                        <p class="text-pink-200 text-xs">MIS Raudlatul Hasan</p>
+                    </div>
+                </div>
+                <nav class="space-y-1">
+                    <a href="dashboard.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                    </a>
+                    <a href="siswa.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users" class="w-5 h-5"></i><span>Data Siswa</span>
+                    </a>
+                    <a href="guru.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="chalkboard-user" class="w-5 h-5"></i><span>Data Guru</span>
+                    </a>
+                    <a href="arsip.html" class="nav-item active flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="folder-archive" class="w-5 h-5"></i><span>Arsip Berkas</span>
+                    </a>
+                    <a href="users.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users-round" class="w-5 h-5"></i><span>Manajemen User</span>
+                    </a>
+                    <a href="pengaturan.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan</span>
+                    </a>
+                    <hr class="my-4 border-white/20">
+                    <a href="#" id="logoutBtn" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i><span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- ================================================== -->
+        <!-- MAIN CONTENT -->
+        <!-- ================================================== -->
+        <div class="flex-1 ml-72 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex justify-between items-center flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <button id="menuToggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                        <i data-lucide="menu" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">📁 Arsip Berkas</h1>
+                        <p class="text-sm text-gray-500">Kelola dan upload dokumen digital</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Cari file..." class="pl-10 pr-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 w-64">
+                    </div>
+                    <button onclick="openUploadModal()" class="btn-gradient px-5 py-2 rounded-xl text-white flex items-center gap-2 shadow-md">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Upload File
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6">
+                <!-- View Toggle -->
+                <div class="flex gap-2 mb-6">
+                    <button id="viewFolderBtn" onclick="setView('folder')" class="px-4 py-2 rounded-xl flex items-center gap-2 bg-pink-500 text-white shadow-md transition">
+                        <i data-lucide="folder"></i> Tampilan Folder
+                    </button>
+                    <button id="viewFileBtn" onclick="setView('file')" class="px-4 py-2 rounded-xl flex items-center gap-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+                        <i data-lucide="file-text"></i> Tampilan File
+                    </button>
+                </div>
+                
+                <!-- Folder View -->
+                <div id="folderView">
+                    <div id="folderGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                    
+                    <!-- File List in Folder -->
+                    <div id="fileListInFolder" class="mt-8 hidden">
+                        <div class="flex items-center gap-3 mb-4 pb-2 border-b border-pink-200">
+                            <button onclick="backToFolders()" class="text-pink-600 hover:text-pink-700 flex items-center gap-1 transition">
+                                <i data-lucide="arrow-left" class="w-5 h-5"></i> Kembali
+                            </button>
+                            <h3 id="currentFolderName" class="text-xl font-bold text-gray-800"></h3>
+                            <span id="folderFileCount" class="text-sm text-gray-500 bg-pink-50 px-2 py-1 rounded-full"></span>
+                        </div>
+                        <div id="fileListContent" class="bg-white rounded-2xl shadow-sm overflow-hidden"></div>
+                    </div>
+                </div>
+                
+                <!-- File View (Table) -->
+                <div id="fileView" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gradient-to-r from-pink-50 to-purple-50">
+                                    <tr>
+                                        <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700">No</th>
+                                        <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700">Nama File</th>
+                                        <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700">Folder</th>
+                                        <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700">Ukuran</th>
+                                        <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700">Tanggal</th>
+                                        <th class="px-5 py-3 text-center text-sm font-semibold text-gray-700">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="arsipTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- MODAL UPLOAD -->
+    <!-- ================================================== -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md modal-show">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">📤 Upload Arsip</h2>
+                <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <!-- Dropzone -->
+            <div id="dropzone" class="dropzone rounded-xl">
+                <i data-lucide="upload-cloud" class="w-12 h-12 text-pink-400 mx-auto mb-2"></i>
+                <p class="text-gray-600">Drag & drop file di sini</p>
+                <p class="text-sm text-gray-400">atau klik untuk memilih</p>
+                <input type="file" id="fileInput" class="hidden" multiple>
+            </div>
+            
+            <!-- Input Folder Manual -->
+            <div class="mt-4">
+                <label class="block text-gray-700 font-semibold mb-2">📂 Nama Folder / Kategori</label>
+                <input type="text" id="folderNameInput" placeholder="Contoh: Raport Kelas 6, Administrasi 2024, Surat Keputusan" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                <p class="text-xs text-green-600 mt-1">✅ File akan tersimpan dalam FOLDER sesuai nama di atas. Folder akan dibuat otomatis.</p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div id="uploadProgress" class="hidden mt-4">
+                <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div id="progressBar" class="bg-pink-500 rounded-full h-2 progress-bar" style="width: 0%"></div>
+                </div>
+                <p id="progressText" class="text-sm text-gray-600 mt-1 text-center">0%</p>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="uploadFiles()" class="flex-1 btn-gradient py-2 rounded-xl text-white font-semibold">Upload</button>
+                <button onclick="closeUploadModal()" class="flex-1 bg-gray-100 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================================================
+        // KONFIGURASI
+        // ==================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbztfVmNSZo4TaD3bww03qIEZKTZNRgbKtvcK5RPmY81fkUkriMVDW4ocPnSU2hEOWIBDA/exec';
+        const STORAGE_KEY = 'arsip_data_folders';
+        
+        // Cek login
+        if (!localStorage.getItem('arsip_auth')) {
+            window.location.href = 'index.html';
+        }
+        
+        // Global variables
+        let allFiles = [];
+        let currentView = 'folder';
+        let currentFolder = null;
+        
+        // ==================================================
+        // FUNGSI FORMAT
+        // ==================================================
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function getFileIcon(filename) {
+            if (!filename) return 'file';
+            if (filename.match(/\.(pdf|PDF)$/)) return 'file-pdf';
+            if (filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) return 'image';
+            if (filename.match(/\.(doc|docx)$/i)) return 'file-text';
+            if (filename.match(/\.(xls|xlsx)$/i)) return 'file-spreadsheet';
+            if (filename.match(/\.(zip|rar|7z)$/i)) return 'archive';
+            return 'file';
+        }
+        
+        function getCategoryClass(kategori) {
+            const cat = (kategori || '').toLowerCase();
+            if (cat.includes('raport')) return 'category-raport';
+            if (cat.includes('administrasi')) return 'category-administrasi';
+            if (cat.includes('surat')) return 'category-surat';
+            if (cat.includes('guru')) return 'category-data-guru';
+            if (cat.includes('siswa')) return 'category-data-siswa';
+            return 'category-dokumen';
+        }
+        
+        // ==================================================
+        // LOAD DATA DENGAN CACHE
+        // ==================================================
+        async function loadData() {
+            // Tampilkan skeleton
+            if (currentView === 'folder' && currentFolder === null) {
+                document.getElementById('folderGrid').innerHTML = Array(6).fill(0).map(() => '<div class="skeleton-card"></div>').join('');
+            }
+            
+            // Load dari cache dulu (INSTANT)
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+                allFiles = JSON.parse(cached);
+                renderCurrentView();
+            }
+            
+            // Load dari API di background
+            try {
+                const response = await fetch(`${API_URL}?action=getArsip`);
+                const result = await response.json();
+                if (result.success && result.data && result.data.length > 0) {
+                    allFiles = result.data.map(item => ({
+                        id: item.id,
+                        nama: item.nama,
+                        folder: item.kategori || 'Tanpa Folder',
+                        ukuran: item.ukuran,
+                        tanggal: item.tanggal,
+                        fileId: item.fileId
+                    }));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+                    renderCurrentView();
+                } else if (!cached || allFiles.length === 0) {
+                    // Data default jika kosong
+                    allFiles = [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+                    renderCurrentView();
+                }
+            } catch (error) {
+                console.log('API offline, menggunakan cache');
+                if (!cached || allFiles.length === 0) {
+                    allFiles = [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+                    renderCurrentView();
+                }
+            }
+        }
+        
+        function renderCurrentView() {
+            if (currentView === 'folder') {
+                renderFolderView();
+            } else {
+                renderFileView();
+            }
+        }
+        
+        // ==================================================
+        // RENDER FOLDER VIEW
+        // ==================================================
+        function renderFolderView() {
+            if (currentFolder === null) {
+                // Grouping berdasarkan folder
+                const folderMap = new Map();
+                allFiles.forEach(file => {
+                    let folderName = file.folder || 'Tanpa Folder';
+                    if (!folderMap.has(folderName)) folderMap.set(folderName, []);
+                    folderMap.get(folderName).push(file);
+                });
+                
+                const folderGrid = document.getElementById('folderGrid');
+                
+                if (folderMap.size === 0) {
+                    folderGrid.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <i data-lucide="folder-open" class="w-16 h-16 text-gray-300 mx-auto mb-3"></i>
+                            <p class="text-gray-500">Belum ada folder</p>
+                            <p class="text-sm text-gray-400 mt-1">Upload file dan masukkan nama folder untuk membuat folder otomatis</p>
+                            <button onclick="openUploadModal()" class="mt-4 btn-gradient px-4 py-2 rounded-xl text-white">📤 Upload File Pertama</button>
+                        </div>
+                    `;
+                } else {
+                    const sortedFolders = Array.from(folderMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+                    folderGrid.innerHTML = sortedFolders.map(([folderName, files]) => `
+                        <div onclick="openFolder('${escapeString(folderName)}')" class="folder-card">
+                            <i data-lucide="folder" class="w-12 h-12 text-pink-400 mx-auto mb-2"></i>
+                            <p class="font-semibold text-gray-800 truncate px-2" title="${folderName}">${folderName}</p>
+                            <p class="text-xs text-gray-500 mt-1">${files.length} file</p>
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('folderGrid').classList.remove('hidden');
+                document.getElementById('fileListInFolder').classList.add('hidden');
+                
+            } else {
+                // Tampilkan file dalam folder tertentu
+                const filesInFolder = allFiles.filter(f => f.folder === currentFolder);
+                document.getElementById('currentFolderName').innerHTML = `<i data-lucide="folder" class="w-6 h-6 inline mr-2"></i> ${currentFolder}`;
+                document.getElementById('folderFileCount').innerHTML = `${filesInFolder.length} file`;
+                
+                if (filesInFolder.length === 0) {
+                    document.getElementById('fileListContent').innerHTML = `
+                        <div class="text-center py-12">
+                            <i data-lucide="file-x" class="w-12 h-12 text-gray-300 mx-auto mb-2"></i>
+                            <p class="text-gray-500">Tidak ada file di folder ini</p>
+                            <button onclick="openUploadModalWithFolder('${escapeString(currentFolder)}')" class="mt-3 btn-gradient px-4 py-2 rounded-xl text-white text-sm">📤 Upload ke Folder Ini</button>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('fileListContent').innerHTML = `
+                        <div class="divide-y divide-pink-100">
+                            ${filesInFolder.map((file, idx) => `
+                                <div class="file-item flex items-center justify-between p-4 hover:bg-pink-50/50 transition">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="${getFileIcon(file.nama)}" class="w-5 h-5 text-pink-500"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-800">${file.nama}</p>
+                                            <div class="flex gap-3 text-xs text-gray-400 mt-1">
+                                                <span>${formatFileSize(file.ukuran)}</span>
+                                                <span>•</span>
+                                                <span>${new Date(file.tanggal).toLocaleDateString('id-ID')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="downloadFile('${file.id}','${escapeString(file.nama)}')" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="Download">
+                                            <i data-lucide="download" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="deleteFile('${file.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('folderGrid').classList.add('hidden');
+                document.getElementById('fileListInFolder').classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+        
+        // ==================================================
+        // RENDER FILE VIEW (TABLE)
+        // ==================================================
+        function renderFileView() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allFiles.filter(f => f.nama.toLowerCase().includes(searchTerm));
+            const tbody = document.getElementById('arsipTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-gray-500"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>Tidak ada file ditemukan</td><tr>';
+                lucide.createIcons();
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map((file, i) => `
+                <tr class="border-b border-pink-100 hover:bg-pink-50/50 transition">
+                    <td class="px-5 py-3">${i+1}</td>
+                    <td class="px-5 py-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="${getFileIcon(file.nama)}" class="w-5 h-5 text-pink-500"></i>
+                            ${file.nama}
+                        </div>
+                    </td>
+                    <td class="px-5 py-3"><span class="category-badge ${getCategoryClass(file.folder)}">📁 ${file.folder}</span></td>
+                    <td class="px-5 py-3">${formatFileSize(file.ukuran)}</td>
+                    <td class="px-5 py-3">${new Date(file.tanggal).toLocaleDateString('id-ID')}</td>
+                    <td class="px-5 py-3 text-center">
+                        <button onclick="downloadFile('${file.id}','${escapeString(file.nama)}')" class="text-blue-500 hover:text-blue-700 mr-3 transition">
+                            <i data-lucide="download" class="w-4 h-4 inline"></i> Download
+                        </button>
+                        <button onclick="deleteFile('${file.id}')" class="text-red-500 hover:text-red-700 transition">
+                            <i data-lucide="trash-2" class="w-4 h-4 inline"></i> Hapus
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+        
+        // ==================================================
+        // NAVIGASI
+        // ==================================================
+        function setView(view) {
+            currentView = view;
+            currentFolder = null;
+            const folderBtn = document.getElementById('viewFolderBtn');
+            const fileBtn = document.getElementById('viewFileBtn');
+            const folderView = document.getElementById('folderView');
+            const fileView = document.getElementById('fileView');
+            
+            if (view === 'folder') {
+                folderBtn.className = 'px-4 py-2 rounded-xl flex items-center gap-2 bg-pink-500 text-white shadow-md transition';
+                fileBtn.className = 'px-4 py-2 rounded-xl flex items-center gap-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+                folderView.classList.remove('hidden');
+                fileView.classList.add('hidden');
+                renderFolderView();
+            } else {
+                folderBtn.className = 'px-4 py-2 rounded-xl flex items-center gap-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+                fileBtn.className = 'px-4 py-2 rounded-xl flex items-center gap-2 bg-pink-500 text-white shadow-md transition';
+                folderView.classList.add('hidden');
+                fileView.classList.remove('hidden');
+                renderFileView();
+            }
+        }
+        
+        function openFolder(folderName) {
+            currentFolder = folderName;
+            renderFolderView();
+            document.getElementById('searchInput').value = '';
+        }
+        
+        function backToFolders() {
+            currentFolder = null;
+            renderFolderView();
+            document.getElementById('searchInput').value = '';
+        }
+        
+        function openUploadModalWithFolder(folderName) {
+            document.getElementById('folderNameInput').value = folderName;
+            openUploadModal();
+        }
+        
+        function escapeString(str) {
+            if (!str) return '';
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+        
+        // ==================================================
+        // UPLOAD FILE (FOLDER OTOMATIS)
+        // ==================================================
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.remove('hidden');
+            document.getElementById('uploadModal').classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.add('hidden');
+            document.getElementById('uploadModal').classList.remove('flex');
+            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('fileInput').value = '';
+            document.getElementById('folderNameInput').value = '';
+            document.getElementById('progressBar').style.width = '0%';
+        }
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        async function uploadFiles() {
+            const files = document.getElementById('fileInput').files;
+            let folderName = document.getElementById('folderNameInput').value.trim();
+            
+            if (!folderName) {
+                showToast('❌ Silakan masukkan nama folder!', 'error');
+                return;
+            }
+            if (files.length === 0) {
+                showToast('❌ Pilih file terlebih dahulu!', 'error');
+                return;
+            }
+            
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            progressDiv.classList.remove('hidden');
+            
+            let successCount = 0;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const progress = ((i + 1) / files.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${Math.round(progress)}% - Mengupload ${file.name}`;
+                
+                const base64 = await fileToBase64(file);
+                
+                const newFile = {
+                    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    nama: file.name,
+                    folder: folderName,
+                    ukuran: file.size,
+                    tanggal: new Date().toISOString(),
+                    data: base64
+                };
+                
+                allFiles.push(newFile);
+                successCount++;
+                
+                // Simpan ke localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+                
+                // Kirim ke API (background)
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'uploadFile');
+                    formData.append('file', base64);
+                    formData.append('fileName', file.name);
+                    formData.append('kategori', folderName);
+                    await fetch(`${API_URL}`, { method: 'POST', body: formData });
+                } catch(e) {
+                    console.log('API tidak tersedia, data tersimpan di lokal');
+                }
+            }
+            
+            closeUploadModal();
+            renderCurrentView();
+            showToast(`✅ Berhasil! ${successCount} file diupload ke folder "${folderName}"`, 'success');
+        }
+        
+        // ==================================================
+        // DOWNLOAD & DELETE
+        // ==================================================
+        function downloadFile(fileId, fileName) {
+            const file = allFiles.find(f => f.id == fileId);
+            if (file && file.data) {
+                const link = document.createElement('a');
+                link.href = file.data;
+                link.download = fileName;
+                link.click();
+            } else {
+                showToast('File tidak ditemukan!', 'error');
+            }
+        }
+        
+        async function deleteFile(fileId) {
+            if (confirm('Hapus file ini? Tindakan tidak dapat dibatalkan!')) {
+                const file = allFiles.find(f => f.id == fileId);
+                allFiles = allFiles.filter(f => f.id != fileId);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+                renderCurrentView();
+                
+                // Hapus dari API (background)
+                if (file && file.fileId) {
+                    try {
+                        await fetch(`${API_URL}?action=deleteArsip&id=${file.id}&fileId=${file.fileId}`);
+                    } catch(e) {}
+                }
+                
+                showToast('File berhasil dihapus!', 'success');
+            }
+        }
+        
+        // ==================================================
+        // SEARCH HANDLER
+        // ==================================================
+        document.getElementById('searchInput').addEventListener('input', () => {
+            if (currentView === 'file') {
+                renderFileView();
+            } else if (currentFolder !== null) {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const filesInFolder = allFiles.filter(f => f.folder === currentFolder);
+                const filtered = filesInFolder.filter(f => f.nama.toLowerCase().includes(searchTerm));
+                
+                if (filtered.length === 0) {
+                    document.getElementById('fileListContent').innerHTML = `
+                        <div class="text-center py-12">
+                            <i data-lucide="search-x" class="w-12 h-12 text-gray-300 mx-auto mb-2"></i>
+                            <p class="text-gray-500">Tidak ada file yang cocok</p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('fileListContent').innerHTML = `
+                        <div class="divide-y divide-pink-100">
+                            ${filtered.map((file, idx) => `
+                                <div class="file-item flex items-center justify-between p-4 hover:bg-pink-50/50 transition">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="${getFileIcon(file.nama)}" class="w-5 h-5 text-pink-500"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-800">${file.nama}</p>
+                                            <div class="flex gap-3 text-xs text-gray-400 mt-1">
+                                                <span>${formatFileSize(file.ukuran)}</span>
+                                                <span>•</span>
+                                                <span>${new Date(file.tanggal).toLocaleDateString('id-ID')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="downloadFile('${file.id}','${escapeString(file.nama)}')" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition">
+                                            <i data-lucide="download" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="deleteFile('${file.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                lucide.createIcons();
+            }
+        });
+        
+        // ==================================================
+        // DRAG & DROP
+        // ==================================================
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        
+        if (dropzone) {
+            dropzone.onclick = () => fileInput.click();
+            dropzone.ondragover = (e) => {
+                e.preventDefault();
+                dropzone.classList.add('drag-over');
+            };
+            dropzone.ondragleave = () => {
+                dropzone.classList.remove('drag-over');
+            };
+            dropzone.ondrop = (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+                fileInput.files = e.dataTransfer.files;
+                showToast(`${fileInput.files.length} file siap diupload`, 'success');
+            };
+        }
+        
+        // ==================================================
+        // TOAST NOTIFICATION
+        // ==================================================
+        function showToast(message, type = 'success') {
+            const oldToast = document.querySelector('.toast');
+            if (oldToast) oldToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast px-5 py-3 rounded-xl text-white font-medium shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            toast.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${message}</span></div>`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ==================================================
+        // LOGOUT & MENU TOGGLE
+        // ==================================================
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
+        
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // ==================================================
+        // INITIALIZE
+        // ==================================================
+        loadData();
+        lucide.createIcons();
+    </script>
+</body>
+</html>

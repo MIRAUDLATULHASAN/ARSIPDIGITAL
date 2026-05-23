@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Login - Arsip Digital MI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Background decorative elements */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            pointer-events: none;
+        }
+        .circle-1 { width: 300px; height: 300px; top: -100px; left: -100px; }
+        .circle-2 { width: 500px; height: 500px; bottom: -200px; right: -200px; }
+        .circle-3 { width: 200px; height: 200px; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .btn-gradient:hover::before { left: 100%; }
+        .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -10px rgba(245,87,108,0.5); }
+        
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #fce7f3;
+        }
+        .input-field:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245,87,108,0.2);
+            transform: translateY(-2px);
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeInUp 0.6s ease-out; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .logo-float { animation: float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="overflow-hidden">
+    <!-- Background decorations -->
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+    <div class="bg-circle circle-3"></div>
+    
+    <!-- Header -->
+    <div class="absolute top-0 left-0 right-0 p-5 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 text-white">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <i data-lucide="archive" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg">Sistem Arsip Digital</h1>
+                    <p class="text-xs text-white/70">MIS Raudlatul Hasan</p>
+                </div>
+            </div>
+            <div class="text-white/60 text-sm hidden md:block">
+                <i data-lucide="shield-check" class="w-4 h-4 inline mr-1"></i> Secure Login
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Login Card -->
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md fade-up">
+            <div class="glass-card rounded-3xl p-8 shadow-2xl">
+                <!-- Logo Section -->
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg logo-float">
+                        <i data-lucide="graduation-cap" class="w-12 h-12 text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Selamat Datang</h2>
+                    <p class="text-gray-500 text-sm mt-1">Silakan login untuk melanjutkan</p>
+                    <div class="mt-3 h-1 w-20 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full mx-auto"></div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Username</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                            <input type="text" id="username" 
+                                class="input-field w-full pl-10 pr-4 py-3 bg-white rounded-xl focus:outline-none transition"
+                                placeholder="Masukkan username" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Password</label>
+                        <div class="relative">
+                            <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                            <input type="password" id="password" 
+                                class="input-field w-full pl-10 pr-12 py-3 bg-white rounded-xl focus:outline-none transition"
+                                placeholder="Masukkan password" required>
+                            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-pink-500 transition"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="loginBtn" 
+                        class="btn-gradient w-full py-3 rounded-xl font-bold text-white text-lg transition-all transform shadow-lg group">
+                        <i data-lucide="log-in" class="w-5 h-5 inline mr-2 group-hover:translate-x-1 transition"></i>
+                        Masuk ke Dashboard
+                    </button>
+                </form>
+
+                <!-- Demo Accounts Info -->
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                    <p class="text-center text-xs text-gray-500 mb-3">Akun Demo</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-pink-50 rounded-lg p-2 text-center">
+                            <span class="font-semibold text-pink-600">Admin</span>
+                            <p class="text-gray-500">Login Admin</p>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-2 text-center">
+                            <span class="font-semibold text-green-600">Guru</span>
+                            <p class="text-gray-500">Gunakan data Masing Masing</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <p class="text-center text-white/60 text-xs mt-6">
+                <i data-lucide="heart" class="w-3 h-3 inline"></i> Sistem Manajemen Arsip Digital MIS Raudlatul Hasan
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi API - GANTI DENGAN URL DEPLOY ANDA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbztfVmNSZo4TaD3bww03qIEZKTZNRgbKtvcK5RPmY81fkUkriMVDW4ocPnSU2hEOWIBDA/exec';
+        
+        lucide.createIcons();
+        
+        // Toggle Password Visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('password');
+            const type = password.type === 'password' ? 'text' : 'password';
+            password.type = type;
+            const icon = this.querySelector('i');
+            icon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        });
+        
+        // Cek apakah sudah login, redirect ke dashboard
+        if (localStorage.getItem('arsip_auth')) {
+            const auth = JSON.parse(localStorage.getItem('arsip_auth'));
+            if (auth.timestamp && (Date.now() - auth.timestamp < 24 * 60 * 60 * 1000)) {
+                window.location.href = 'dashboard.html';
+            }
+        }
+        
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const originalText = loginBtn.innerHTML;
+            
+            // Validasi input
+            if (!username || !password) {
+                showMessage('Username dan password harus diisi!', 'error');
+                return;
+            }
+            
+            // Tampilkan loading
+            loginBtn.innerHTML = '<div class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Memproses...';
+            loginBtn.disabled = true;
+            
+            try {
+                // Coba login ke API
+                const response = await fetch(`${API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Simpan session
+                    const session = {
+                        user: result.user,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('arsip_auth', JSON.stringify(session));
+                    localStorage.setItem('arsip_user', JSON.stringify(result.user));
+                    
+                    showMessage(`Selamat datang, ${result.user.nama || result.user.username}!`, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    // Fallback offline
+                    if (username === 'admin' && password === 'admin123') {
+                        const user = { username: 'admin', role: 'admin', nama: 'Administrator' };
+                        localStorage.setItem('arsip_auth', JSON.stringify({ user: user, timestamp: Date.now() }));
+                        localStorage.setItem('arsip_user', JSON.stringify(user));
+                        showMessage('Login berhasil (mode offline)!', 'success');
+                        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+                    } else {
+                        showMessage(result.error || 'Username atau password salah!', 'error');
+                        loginBtn.innerHTML = originalText;
+                        loginBtn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                // Fallback offline
+                if (username === 'admin' && password === 'admin123') {
+                    const user = { username: 'admin', role: 'admin', nama: 'Administrator' };
+                    localStorage.setItem('arsip_auth', JSON.stringify({ user: user, timestamp: Date.now() }));
+                    localStorage.setItem('arsip_user', JSON.stringify(user));
+                    showMessage('Login berhasil!', 'success');
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+                } else if (username === 'guru1' && password === 'guru123') {
+                    const user = { username: 'guru1', role: 'guru', nama: 'Ahmad Zaini, S.Pd' };
+                    localStorage.setItem('arsip_auth', JSON.stringify({ user: user, timestamp: Date.now() }));
+                    localStorage.setItem('arsip_user', JSON.stringify(user));
+                    showMessage('Login berhasil!', 'success');
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+                } else {
+                    showMessage('Koneksi gagal. Periksa jaringan Anda.', 'error');
+                    loginBtn.innerHTML = originalText;
+                    loginBtn.disabled = false;
+                }
+            }
+        });
+        
+        // Show message function
+        function showMessage(message, type) {
+            // Hapus pesan lama
+            const oldMsg = document.querySelector('.message-toast');
+            if (oldMsg) oldMsg.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `message-toast fixed top-5 left-1/2 transform -translate-x-1/2 px-5 py-3 rounded-xl text-white font-medium z-50 shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            toast.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${message}</span></div>`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

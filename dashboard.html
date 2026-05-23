@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Arsip Digital MI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%); }
+        
+        /* Sidebar Styles */
+        .sidebar-gradient { background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%); }
+        .nav-item { color: rgba(255,255,255,0.8); transition: all 0.3s ease; border-radius: 12px; margin: 4px 0; }
+        .nav-item:hover { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .nav-item.active { background: rgba(255,255,255,0.25); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Card Styles */
+        .stat-card {
+            background: white;
+            border-radius: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+        }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px -12px rgba(245,87,108,0.2);
+        }
+        
+        /* Chart Container */
+        .chart-card {
+            background: white;
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid #fce7f3;
+        }
+        .chart-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        }
+        
+        /* Skeleton Loading */
+        .skeleton-card {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 1.5rem;
+            height: 120px;
+        }
+        .skeleton-chart {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 1.5rem;
+            height: 280px;
+        }
+        .skeleton-row {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            height: 50px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Category Badge */
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .category-raport { background: #10b981; color: white; }
+        .category-administrasi { background: #3b82f6; color: white; }
+        .category-surat { background: #f59e0b; color: white; }
+        .category-data-guru { background: #8b5cf6; color: white; }
+        .category-data-siswa { background: #ec489a; color: white; }
+        .category-dokumen { background: #06b6d4; color: white; }
+        
+        /* Counter Animation */
+        .counter {
+            animation: countUp 0.6s ease-out;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* User Avatar */
+        .user-avatar {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            transition: all 0.3s ease;
+        }
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(245,87,108,0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .ml-72 { margin-left: 0; }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <!-- ================================================== -->
+        <!-- SIDEBAR -->
+        <!-- ================================================== -->
+        <div id="sidebar" class="sidebar-gradient w-72 fixed h-full z-20 transition-all duration-300 shadow-xl">
+            <div class="p-6">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-white/20">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="archive" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">Arsip Digital</h2>
+                        <p class="text-pink-200 text-xs">MIS Raudlatul Hasan</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation Menu -->
+                <nav class="space-y-1">
+                    <a href="dashboard.html" class="nav-item active flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="siswa.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span>Data Siswa</span>
+                    </a>
+                    <a href="guru.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="chalkboard-user" class="w-5 h-5"></i>
+                        <span>Data Guru</span>
+                    </a>
+                    <a href="arsip.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="folder-archive" class="w-5 h-5"></i>
+                        <span>Arsip Berkas</span>
+                    </a>
+                    <a href="users.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users-round" class="w-5 h-5"></i>
+                        <span>Manajemen User</span>
+                    </a>
+                    <a href="pengaturan.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span>Pengaturan</span>
+                    </a>
+                    <hr class="my-4 border-white/20">
+                    <a href="#" id="logoutBtn" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- ================================================== -->
+        <!-- MAIN CONTENT -->
+        <!-- ================================================== -->
+        <div class="flex-1 ml-72 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button id="menuToggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                        <i data-lucide="menu" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                        <p class="text-sm text-gray-500" id="welcomeText">Selamat datang kembali!</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="p-2 rounded-lg hover:bg-gray-100 transition">
+                            <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        </button>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
+                    </div>
+                    
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-3">
+                        <div class="user-avatar w-10 h-10 rounded-full flex items-center justify-center shadow-md cursor-pointer">
+                            <span class="text-white font-bold text-sm" id="userInitial">A</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="text-sm font-semibold text-gray-800" id="userName">Administrator</p>
+                            <p class="text-xs text-gray-500" id="userRole">Admin</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards Grid -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="statsGrid">
+                    <!-- Skeleton akan muncul di sini, lalu diganti dengan data asli -->
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" id="chartsGrid">
+                    <div class="skeleton-chart"></div>
+                    <div class="skeleton-chart"></div>
+                </div>
+                
+                <!-- Recent Uploads -->
+                <div class="chart-card p-6" id="recentCard">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg">📄 Arsip Terbaru</h3>
+                        <a href="arsip.html" class="text-pink-500 text-sm hover:text-pink-600 transition flex items-center gap-1">
+                            Lihat semua <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                    <div id="recentUploads">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================================================
+        // KONFIGURASI
+        // ==================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbztfVmNSZo4TaD3bww03qIEZKTZNRgbKtvcK5RPmY81fkUkriMVDW4ocPnSU2hEOWIBDA/exec';
+        
+        // Cek login
+        const auth = localStorage.getItem('arsip_auth');
+        if (!auth) {
+            window.location.href = 'index.html';
+        }
+        
+        // Ambil data user
+        let currentUser = { username: 'admin', role: 'admin', nama: 'Administrator' };
+        try {
+            const userData = localStorage.getItem('arsip_user');
+            if (userData) currentUser = JSON.parse(userData);
+        } catch(e) {}
+        
+        // Update UI dengan data user
+        document.getElementById('userInitial').textContent = (currentUser.nama || currentUser.username).charAt(0).toUpperCase();
+        document.getElementById('userName').textContent = currentUser.nama || currentUser.username;
+        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Guru';
+        
+        // Greeting berdasarkan waktu
+        const hour = new Date().getHours();
+        let greeting = 'Selamat pagi';
+        if (hour >= 12 && hour < 15) greeting = 'Selamat siang';
+        else if (hour >= 15 && hour < 18) greeting = 'Selamat sore';
+        else if (hour >= 18) greeting = 'Selamat malam';
+        document.getElementById('welcomeText').textContent = `${greeting}, ${currentUser.nama || currentUser.username}!`;
+        
+        // ==================================================
+        // FUNGSI LOAD DATA DENGAN CACHE
+        // ==================================================
+        let allSiswa = [], allGuru = [], allArsip = [];
+        
+        async function loadDashboard() {
+            // Load dari cache dulu (INSTANT)
+            const cachedSiswa = localStorage.getItem('siswa_data_cache');
+            const cachedGuru = localStorage.getItem('guru_data_cache');
+            const cachedArsip = localStorage.getItem('arsip_data_cache');
+            
+            if (cachedSiswa) allSiswa = JSON.parse(cachedSiswa);
+            if (cachedGuru) allGuru = JSON.parse(cachedGuru);
+            if (cachedArsip) allArsip = JSON.parse(cachedArsip);
+            
+            // Render dengan data cache
+            renderStats();
+            
+            // Load dari API di background
+            try {
+                const [siswaRes, guruRes, arsipRes] = await Promise.all([
+                    fetch(`${API_URL}?action=getSiswa`).then(r => r.json()).catch(() => ({ data: [] })),
+                    fetch(`${API_URL}?action=getGuru`).then(r => r.json()).catch(() => ({ data: [] })),
+                    fetch(`${API_URL}?action=getArsip`).then(r => r.json()).catch(() => ({ data: [] }))
+                ]);
+                
+                if (siswaRes.data && siswaRes.data.length) {
+                    allSiswa = siswaRes.data;
+                    localStorage.setItem('siswa_data_cache', JSON.stringify(allSiswa));
+                }
+                if (guruRes.data && guruRes.data.length) {
+                    allGuru = guruRes.data;
+                    localStorage.setItem('guru_data_cache', JSON.stringify(allGuru));
+                }
+                if (arsipRes.data && arsipRes.data.length) {
+                    allArsip = arsipRes.data;
+                    localStorage.setItem('arsip_data_cache', JSON.stringify(allArsip));
+                }
+                
+                // Render ulang dengan data terbaru
+                renderStats();
+                renderCharts();
+                renderRecent();
+            } catch(e) {
+                console.log('API offline, menggunakan cache');
+                renderCharts();
+                renderRecent();
+            }
+        }
+        
+        // ==================================================
+        // RENDER STATISTIK CARD
+        // ==================================================
+        function renderStats() {
+            const today = new Date().toDateString();
+            const todayUploads = allArsip.filter(a => new Date(a.tanggal).toDateString() === today).length;
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Total Siswa</p>
+                            <h3 class="text-3xl font-bold text-gray-800 counter">${allSiswa.length}</h3>
+                            <p class="text-xs text-green-500 mt-2"><i data-lucide="trending-up" class="w-3 h-3 inline"></i> +12% dari bulan lalu</p>
+                        </div>
+                        <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="users" class="w-6 h-6 text-pink-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Total Guru</p>
+                            <h3 class="text-3xl font-bold text-gray-800 counter">${allGuru.length}</h3>
+                            <p class="text-xs text-gray-500 mt-2"><i data-lucide="user-check" class="w-3 h-3 inline"></i> Aktif semua</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="chalkboard-user" class="w-6 h-6 text-purple-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Total Arsip</p>
+                            <h3 class="text-3xl font-bold text-gray-800 counter">${allArsip.length}</h3>
+                            <p class="text-xs text-blue-500 mt-2"><i data-lucide="folder" class="w-3 h-3 inline"></i> Tersimpan di Drive</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="folder-archive" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Upload Hari Ini</p>
+                            <h3 class="text-3xl font-bold text-gray-800 counter">${todayUploads}</h3>
+                            <p class="text-xs text-green-500 mt-2"><i data-lucide="calendar" class="w-3 h-3 inline"></i> ${new Date().toLocaleDateString('id-ID')}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="upload-cloud" class="w-6 h-6 text-green-500"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+        
+        // ==================================================
+        // RENDER CHARTS
+        // ==================================================
+        function renderCharts() {
+            const categories = ['Raport', 'Administrasi', 'Surat', 'Data Guru', 'Data Siswa', 'Dokumen'];
+            const counts = categories.map(cat => allArsip.filter(a => a.kategori === cat).length);
+            
+            const chartsGrid = document.getElementById('chartsGrid');
+            chartsGrid.innerHTML = `
+                <div class="chart-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-pink-500"></i>
+                        Arsip per Kategori
+                    </h3>
+                    <canvas id="arsipChart" height="220"></canvas>
+                </div>
+                <div class="chart-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5 text-pink-500"></i>
+                        Aktivitas Upload (7 Hari Terakhir)
+                    </h3>
+                    <canvas id="aktivitasChart" height="220"></canvas>
+                </div>
+            `;
+            
+            // Chart Arsip per Kategori
+            const ctx1 = document.getElementById('arsipChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec489a', '#06b6d4'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                        tooltip: { backgroundColor: '#1f2937', titleColor: '#fff', bodyColor: '#e5e7eb' }
+                    }
+                }
+            });
+            
+            // Chart Aktivitas 7 Hari
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                last7Days.push(d.toDateString());
+            }
+            const aktivitasCounts = last7Days.map(day => allArsip.filter(a => new Date(a.tanggal).toDateString() === day).length);
+            
+            const ctx2 = document.getElementById('aktivitasChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: last7Days.map(d => d.substring(0, 10)),
+                    datasets: [{
+                        label: 'Jumlah Upload',
+                        data: aktivitasCounts,
+                        borderColor: '#f5576c',
+                        backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#f5576c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { backgroundColor: '#1f2937' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3e8ff' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+            
+            lucide.createIcons();
+        }
+        
+        // ==================================================
+        // RENDER RECENT UPLOADS
+        // ==================================================
+        function renderRecent() {
+            const recent = [...allArsip].reverse().slice(0, 5);
+            const recentContainer = document.getElementById('recentUploads');
+            
+            if (recent.length === 0) {
+                recentContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="inbox" class="w-12 h-12 text-gray-300 mx-auto mb-2"></i>
+                        <p class="text-gray-500">Belum ada arsip yang diupload</p>
+                        <a href="arsip.html" class="inline-block mt-3 text-pink-500 text-sm hover:underline">Upload arsip pertama</a>
+                    </div>
+                `;
+            } else {
+                recentContainer.innerHTML = `
+                    <div class="space-y-2">
+                        ${recent.map(file => `
+                            <div class="flex items-center justify-between p-3 bg-pink-50/30 rounded-xl hover:bg-pink-50 transition">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="${file.nama?.match(/\.(pdf|PDF)$/) ? 'file-pdf' : file.nama?.match(/\.(jpg|jpeg|png)$/i) ? 'image' : 'file'}" class="w-5 h-5 text-pink-500"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-800 text-sm">${file.nama}</p>
+                                        <p class="text-xs text-gray-400">${new Date(file.tanggal).toLocaleString('id-ID')}</p>
+                                    </div>
+                                </div>
+                                <span class="category-badge category-${(file.kategori || 'dokumen').toLowerCase()} text-xs">${file.kategori || 'Dokumen'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+        
+        // ==================================================
+        // LOGOUT & MENU TOGGLE
+        // ==================================================
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('arsip_auth');
+            localStorage.removeItem('arsip_user');
+            window.location.href = 'index.html';
+        });
+        
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // ==================================================
+        // INITIALIZE
+        // ==================================================
+        loadDashboard();
+        lucide.createIcons();
+    </script>
+</body>
+</html>

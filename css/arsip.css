@@ -1,0 +1,78 @@
+/* Arsip Specific Styles */
+.dropzone {
+    border: 2px dashed #fbcfe8;
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.dropzone.drag-over {
+    background: #fdf2f8;
+    border-color: #f5576c;
+}
+
+/* File List */
+.file-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #fdf2f8;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.file-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 0.5rem;
+}
+
+/* Progress Bar */
+.progress-container {
+    background: #e5e7eb;
+    border-radius: 9999px;
+    height: 0.5rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #f093fb, #f5576c);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Category Badge */
+.category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.category-raport { background: #10b981; color: white; }
+.category-administrasi { background: #3b82f6; color: white; }
+.category-surat { background: #f59e0b; color: white; }
+.category-data-guru { background: #8b5cf6; color: white; }
+.category-data-siswa { background: #ec489a; color: white; }
+.category-dokumen-sekolah { background: #06b6d4; color: white; }
+
+/* File Preview Modal */
+.preview-modal {
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.preview-iframe {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}

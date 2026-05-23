@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan - Arsip Digital MI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%); }
+        
+        /* Sidebar Styles */
+        .sidebar-gradient { background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%); }
+        .nav-item { color: rgba(255,255,255,0.8); transition: all 0.3s ease; border-radius: 12px; margin: 4px 0; }
+        .nav-item:hover { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .nav-item.active { background: rgba(255,255,255,0.25); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Button Styles */
+        .btn-gradient { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(245,87,108,0.4); }
+        .btn-outline { border: 1.5px solid #fbcfe8; background: white; transition: all 0.3s ease; }
+        .btn-outline:hover { border-color: #f5576c; background: #fdf2f8; }
+        
+        /* Setting Card */
+        .setting-card { background: white; border-radius: 1.5rem; padding: 1.5rem; transition: all 0.3s ease; border: 1px solid #fce7f3; }
+        .setting-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -12px rgba(245,87,108,0.15); border-color: #fbcfe8; }
+        
+        /* Toggle Switch */
+        .toggle-switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.3s; border-radius: 34px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        input:checked + .toggle-slider:before { transform: translateX(24px); }
+        
+        /* Color Option */
+        .color-option { width: 40px; height: 40px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.active { border-color: #1f2937; transform: scale(1.05); }
+        
+        /* Skeleton */
+        .skeleton-setting { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 1.5rem; height: 120px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; z-index: 1000; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .ml-72 { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <!-- ================================================== -->
+        <!-- SIDEBAR -->
+        <!-- ================================================== -->
+        <div id="sidebar" class="sidebar-gradient w-72 fixed h-full z-20 transition-all duration-300 shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-white/20">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="archive" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">Arsip Digital</h2>
+                        <p class="text-pink-200 text-xs">MIS Raudlatul Hasan</p>
+                    </div>
+                </div>
+                <nav class="space-y-1">
+                    <a href="dashboard.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                    </a>
+                    <a href="siswa.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users" class="w-5 h-5"></i><span>Data Siswa</span>
+                    </a>
+                    <a href="guru.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="chalkboard-user" class="w-5 h-5"></i><span>Data Guru</span>
+                    </a>
+                    <a href="arsip.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="folder-archive" class="w-5 h-5"></i><span>Arsip Berkas</span>
+                    </a>
+                    <a href="users.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users-round" class="w-5 h-5"></i><span>Manajemen User</span>
+                    </a>
+                    <a href="pengaturan.html" class="nav-item active flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan</span>
+                    </a>
+                    <hr class="my-4 border-white/20">
+                    <a href="#" id="logoutBtn" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i><span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- ================================================== -->
+        <!-- MAIN CONTENT -->
+        <!-- ================================================== -->
+        <div class="flex-1 ml-72 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex items-center gap-3">
+                <button id="menuToggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                    <i data-lucide="menu" class="w-6 h-6 text-gray-600"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">⚙️ Pengaturan</h1>
+                    <p class="text-sm text-gray-500">Konfigurasi aplikasi dan manajemen data</p>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- ================================================== -->
+                    <!-- TEMA & TAMPILAN -->
+                    <!-- ================================================== -->
+                    <div class="setting-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                                <i data-lucide="palette" class="w-5 h-5 text-pink-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">Tema & Tampilan</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <!-- Dark Mode Toggle -->
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-700">Mode Gelap</p>
+                                    <p class="text-xs text-gray-500">Tampilan gelap untuk kenyamanan mata</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="darkModeToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <!-- Warna Tema -->
+                            <div>
+                                <p class="font-semibold text-gray-700 mb-2">Warna Tema</p>
+                                <div class="flex gap-3">
+                                    <div onclick="changeTheme('pink')" class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" data-color="pink"></div>
+                                    <div onclick="changeTheme('purple')" class="color-option" style="background: linear-gradient(135deg, #a855f7, #7c3aed)" data-color="purple"></div>
+                                    <div onclick="changeTheme('blue')" class="color-option" style="background: linear-gradient(135deg, #60a5fa, #3b82f6)" data-color="blue"></div>
+                                    <div onclick="changeTheme('green')" class="color-option" style="background: linear-gradient(135deg, #34d399, #10b981)" data-color="green"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ================================================== -->
+                    <!-- INFORMASI SEKOLAH -->
+                    <!-- ================================================== -->
+                    <div class="setting-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i data-lucide="school" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">Informasi Sekolah</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-1 text-sm">Nama Sekolah</label>
+                                <input type="text" id="schoolName" value="MIS Raudlatul Hasan" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-1 text-sm">Alamat Sekolah</label>
+                                <input type="text" id="schoolAddress" placeholder="Jl. Pendidikan No. 1, Kota ..." class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                            </div>
+                            <button onclick="saveSchoolInfo()" class="btn-gradient px-4 py-2 rounded-xl text-white text-sm">Simpan Informasi</button>
+                        </div>
+                    </div>
+                    
+                    <!-- ================================================== -->
+                    <!-- BACKUP & RESTORE -->
+                    <!-- ================================================== -->
+                    <div class="setting-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                                <i data-lucide="database" class="w-5 h-5 text-green-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">Backup & Restore</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <button onclick="backupData()" class="w-full btn-outline py-2 rounded-xl flex items-center justify-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i> Download Backup Data
+                            </button>
+                            <button onclick="restoreData()" class="w-full btn-outline py-2 rounded-xl flex items-center justify-center gap-2">
+                                <i data-lucide="upload" class="w-4 h-4"></i> Restore Backup
+                            </button>
+                            <input type="file" id="restoreFile" class="hidden" accept=".json">
+                            <p class="text-xs text-gray-500 text-center">Backup mencakup data siswa, guru, arsip, dan pengaturan</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ================================================== -->
+                    <!-- MANAJEMEN DATA -->
+                    <!-- ================================================== -->
+                    <div class="setting-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                                <i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">Manajemen Data</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-700">Hapus Semua Data</p>
+                                    <p class="text-xs text-gray-500">Menghapus semua data siswa, guru, dan arsip</p>
+                                </div>
+                                <button onclick="clearAllData()" class="bg-red-500 text-white px-4 py-2 rounded-xl text-sm hover:bg-red-600 transition">Hapus</button>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-700">Reset Cache</p>
+                                    <p class="text-xs text-gray-500">Menghapus data cache lokal</p>
+                                </div>
+                                <button onclick="clearCache()" class="btn-outline px-4 py-2 rounded-xl text-sm">Reset Cache</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ================================================== -->
+                    <!-- TENTANG APLIKASI -->
+                    <!-- ================================================== -->
+                    <div class="setting-card lg:col-span-2">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <i data-lucide="info" class="w-5 h-5 text-purple-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">Tentang Aplikasi</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Nama Aplikasi:</span> Sistem Arsip Digital MI</p>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Sekolah:</span> MIS Raudlatul Hasan</p>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Versi:</span> 2.0.0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Developer:</span> MIS Raudlatul Hasan</p>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Lisensi:</span> Internal Use</p>
+                                <p class="text-sm text-gray-600"><span class="font-semibold">Terakhir Update:</span> 2025</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-pink-100">
+                            <div class="flex items-center gap-2 text-sm text-gray-500">
+                                <i data-lucide="heart" class="w-4 h-4 text-pink-500"></i>
+                                <span>Sistem Manajemen Arsip Digital untuk Madrasah Ibtidaiyah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================================================
+        // KONFIGURASI
+        // ==================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbztfVmNSZo4TaD3bww03qIEZKTZNRgbKtvcK5RPmY81fkUkriMVDW4ocPnSU2hEOWIBDA/exec';
+        const SETTINGS_KEY = 'app_settings';
+        
+        // Cek login
+        if (!localStorage.getItem('arsip_auth')) {
+            window.location.href = 'index.html';
+        }
+        
+        // ==================================================
+        // PENGATURAN TEMA
+        // ==================================================
+        function loadTheme() {
+            const settings = localStorage.getItem(SETTINGS_KEY);
+            if (settings) {
+                const parsed = JSON.parse(settings);
+                if (parsed.theme) {
+                    applyTheme(parsed.theme);
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        if (opt.dataset.color === parsed.theme) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+                if (parsed.darkMode) {
+                    document.getElementById('darkModeToggle').checked = true;
+                    document.body.classList.add('dark');
+                }
+            }
+        }
+        
+        function applyTheme(color) {
+            const sidebar = document.getElementById('sidebar');
+            const gradients = {
+                pink: 'linear-gradient(180deg, #f093fb 0%, #f5576c 100%)',
+                purple: 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
+                blue: 'linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%)',
+                green: 'linear-gradient(180deg, #34d399 0%, #10b981 100%)'
+            };
+            if (sidebar && gradients[color]) {
+                sidebar.style.background = gradients[color];
+            }
+            
+            const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            settings.theme = color;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        }
+        
+        function changeTheme(color) {
+            applyTheme(color);
+            document.querySelectorAll('.color-option').forEach(opt => {
+                if (opt.dataset.color === color) {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+            showToast(`Tema ${color} berhasil diterapkan!`, 'success');
+        }
+        
+        // Dark Mode Toggle
+        document.getElementById('darkModeToggle').addEventListener('change', function(e) {
+            const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            settings.darkMode = e.target.checked;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            
+            if (e.target.checked) {
+                document.body.classList.add('dark');
+                showToast('Mode gelap aktif', 'success');
+            } else {
+                document.body.classList.remove('dark');
+                showToast('Mode terang aktif', 'success');
+            }
+        });
+        
+        // ==================================================
+        // INFORMASI SEKOLAH
+        // ==================================================
+        function saveSchoolInfo() {
+            const schoolName = document.getElementById('schoolName').value;
+            const schoolAddress = document.getElementById('schoolAddress').value;
+            const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            settings.schoolName = schoolName;
+            settings.schoolAddress = schoolAddress;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            
+            // Update sidebar
+            const schoolNameElement = document.querySelector('.sidebar-gradient p');
+            if (schoolNameElement) {
+                schoolNameElement.textContent = schoolName;
+            }
+            
+            showToast('Informasi sekolah berhasil disimpan!', 'success');
+        }
+        
+        function loadSchoolInfo() {
+            const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            if (settings.schoolName) {
+                document.getElementById('schoolName').value = settings.schoolName;
+            }
+            if (settings.schoolAddress) {
+                document.getElementById('schoolAddress').value = settings.schoolAddress;
+            }
+        }
+        
+        // ==================================================
+        // BACKUP & RESTORE
+        // ==================================================
+        function backupData() {
+            const data = {
+                siswa: localStorage.getItem('siswa_data_cache'),
+                guru: localStorage.getItem('guru_data_cache'),
+                arsip: localStorage.getItem('arsip_data_folders'),
+                users: localStorage.getItem('users_cache'),
+                settings: localStorage.getItem(SETTINGS_KEY),
+                backupDate: new Date().toISOString(),
+                version: '2.0.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_arsip_digital_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Backup data berhasil dibuat!', 'success');
+        }
+        
+        function restoreData() {
+            document.getElementById('restoreFile').click();
+        }
+        
+        document.getElementById('restoreFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const backup = JSON.parse(event.target.result);
+                    
+                    if (backup.siswa) localStorage.setItem('siswa_data_cache', backup.siswa);
+                    if (backup.guru) localStorage.setItem('guru_data_cache', backup.guru);
+                    if (backup.arsip) localStorage.setItem('arsip_data_folders', backup.arsip);
+                    if (backup.users) localStorage.setItem('users_cache', backup.users);
+                    if (backup.settings) localStorage.setItem(SETTINGS_KEY, backup.settings);
+                    
+                    showToast('Restore data berhasil! Halaman akan dimuat ulang.', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } catch (error) {
+                    showToast('File backup tidak valid!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        });
+        
+        // ==================================================
+        // MANAJEMEN DATA
+        // ==================================================
+        function clearAllData() {
+            if (confirm('⚠️ PERINGATAN: Tindakan ini akan menghapus SEMUA data (siswa, guru, arsip, user). Tidak dapat dibatalkan! Lanjutkan?')) {
+                localStorage.removeItem('siswa_data_cache');
+                localStorage.removeItem('guru_data_cache');
+                localStorage.removeItem('arsip_data_folders');
+                localStorage.removeItem('users_cache');
+                showToast('Semua data telah dihapus!', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+        
+        function clearCache() {
+            localStorage.removeItem('siswa_data_cache');
+            localStorage.removeItem('guru_data_cache');
+            localStorage.removeItem('arsip_data_folders');
+            localStorage.removeItem('users_cache');
+            showToast('Cache berhasil dibersihkan! Data akan dimuat ulang.', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+        
+        // ==================================================
+        // TOAST NOTIFICATION
+        // ==================================================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast px-5 py-3 rounded-xl text-white font-medium shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            toast.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${message}</span></div>`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ==================================================
+        // LOGOUT & MENU TOGGLE
+        // ==================================================
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
+        
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // ==================================================
+        // INITIALIZE
+        // ==================================================
+        loadTheme();
+        loadSchoolInfo();
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* Data Siswa Specific Styles */
+.table-container {
+    overflow-x: auto;
+    border-radius: 1rem;
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+/* Pagination */
+.pagination-btn {
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.pagination-btn:hover:not(.active) {
+    background: #fce7f3;
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    
+    thead {
+        display: none;
+    }
+    
+    tr {
+        margin-bottom: 1rem;
+        border: 1px solid #fce7f3;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        padding: 8px;
+    }
+    
+    td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+}

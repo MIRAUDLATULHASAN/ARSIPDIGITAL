@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen User - Arsip Digital MI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%); }
+        
+        /* Sidebar Styles */
+        .sidebar-gradient { background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%); }
+        .nav-item { color: rgba(255,255,255,0.8); transition: all 0.3s ease; border-radius: 12px; margin: 4px 0; }
+        .nav-item:hover { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .nav-item.active { background: rgba(255,255,255,0.25); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Button Styles */
+        .btn-gradient { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(245,87,108,0.4); }
+        .btn-outline { border: 1.5px solid #fbcfe8; background: white; transition: all 0.3s ease; }
+        .btn-outline:hover { border-color: #f5576c; background: #fdf2f8; }
+        
+        /* Table Styles */
+        .data-table { border-collapse: separate; border-spacing: 0; width: 100%; }
+        .data-table th { background: #fdf2f8; padding: 14px 16px; font-weight: 600; color: #4a5568; border-bottom: 2px solid #fce7f3; }
+        .data-table td { padding: 12px 16px; border-bottom: 1px solid #fce7f3; }
+        .data-table tr:hover td { background: #fdf2f8; }
+        
+        /* Role Badge */
+        .role-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .role-admin { background: #8b5cf620; color: #5b21b6; }
+        .role-guru { background: #10b98120; color: #065f46; }
+        .role-bendahara { background: #f59e0b20; color: #92400e; }
+        
+        /* Skeleton Loading */
+        .skeleton-row { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 52px; margin-bottom: 8px; border-radius: 12px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Modal Animation */
+        .modal-show { animation: modalFadeIn 0.3s ease-out; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Card */
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1); }
+        
+        /* Action Buttons */
+        .btn-edit { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 8px; transition: all 0.2s; font-size: 13px; }
+        .btn-edit:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-delete { background: #ef4444; color: white; padding: 6px 14px; border-radius: 8px; transition: all 0.2s; font-size: 13px; }
+        .btn-delete:hover { background: #dc2626; transform: translateY(-1px); }
+        
+        /* Stats Card */
+        .stat-card { background: white; border-radius: 1rem; padding: 1rem; border: 1px solid #fce7f3; transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px -8px rgba(245,87,108,0.2); }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; z-index: 1000; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .ml-72 { margin-left: 0; }
+            .data-table th, .data-table td { padding: 10px 12px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <!-- ================================================== -->
+        <!-- SIDEBAR -->
+        <!-- ================================================== -->
+        <div id="sidebar" class="sidebar-gradient w-72 fixed h-full z-20 transition-all duration-300 shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-white/20">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="archive" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">Arsip Digital</h2>
+                        <p class="text-pink-200 text-xs">MIS Raudlatul Hasan</p>
+                    </div>
+                </div>
+                <nav class="space-y-1">
+                    <a href="dashboard.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                    </a>
+                    <a href="siswa.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users" class="w-5 h-5"></i><span>Data Siswa</span>
+                    </a>
+                    <a href="guru.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="chalkboard-user" class="w-5 h-5"></i><span>Data Guru</span>
+                    </a>
+                    <a href="arsip.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="folder-archive" class="w-5 h-5"></i><span>Arsip Berkas</span>
+                    </a>
+                    <a href="users.html" class="nav-item active flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="users-round" class="w-5 h-5"></i><span>Manajemen User</span>
+                    </a>
+                    <a href="pengaturan.html" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan</span>
+                    </a>
+                    <hr class="my-4 border-white/20">
+                    <a href="#" id="logoutBtn" class="nav-item flex items-center gap-3 px-4 py-3 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i><span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- ================================================== -->
+        <!-- MAIN CONTENT -->
+        <!-- ================================================== -->
+        <div class="flex-1 ml-72 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex justify-between items-center flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <button id="menuToggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                        <i data-lucide="menu" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">👥 Manajemen User</h1>
+                        <p class="text-sm text-gray-500">Kelola akun pengguna sistem</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Cari user..." class="pl-10 pr-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 w-64">
+                    </div>
+                    <button onclick="openTambahModal()" class="btn-gradient px-5 py-2 rounded-xl text-white flex items-center gap-2 shadow-md">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6" id="statsGrid">
+                    <div class="stat-card flex items-center gap-4">
+                        <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="users" class="w-6 h-6 text-pink-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Total User</p>
+                            <p class="text-2xl font-bold text-gray-800" id="totalUsers">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="crown" class="w-6 h-6 text-purple-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Admin</p>
+                            <p class="text-2xl font-bold text-gray-800" id="totalAdmin">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="chalkboard-user" class="w-6 h-6 text-green-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Guru</p>
+                            <p class="text-2xl font-bold text-gray-800" id="totalGuru">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card flex items-center gap-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="wallet" class="w-6 h-6 text-orange-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Bendahara</p>
+                            <p class="text-2xl font-bold text-gray-800" id="totalBendahara">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Table Card -->
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center w-16">No</th>
+                                    <th>Username</th>
+                                    <th>Nama</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Dibuat</th>
+                                    <th class="text-center w-32">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <tr><td colspan="7" class="text-center py-8">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- MODAL TAMBAH/EDIT USER -->
+    <!-- ================================================== -->
+    <div id="userModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md modal-show">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Tambah User</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="originalUsername">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Username *</label>
+                        <input type="text" id="username" placeholder="contoh: guru3" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Password *</label>
+                        <input type="password" id="password" placeholder="Minimal 6 karakter" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400" required>
+                        <button type="button" onclick="togglePassword()" class="text-xs text-pink-500 mt-1 hover:underline">Tampilkan Password</button>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Nama Lengkap</label>
+                        <input type="text" id="nama" placeholder="Nama guru / pegawai" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">Role</label>
+                            <select id="role" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                                <option value="guru">👨‍🏫 Guru</option>
+                                <option value="admin">👑 Admin</option>
+                                <option value="bendahara">💰 Bendahara</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1 text-sm">Email</label>
+                            <input type="email" id="email" placeholder="email@sekolah.sch.id" class="w-full px-4 py-2 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="flex-1 btn-gradient py-2 rounded-xl text-white font-semibold">Simpan</button>
+                    <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================================================
+        // KONFIGURASI
+        // ==================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbztfVmNSZo4TaD3bww03qIEZKTZNRgbKtvcK5RPmY81fkUkriMVDW4ocPnSU2hEOWIBDA/exec';
+        const STORAGE_KEY = 'users_cache';
+        
+        // Cek login
+        if (!localStorage.getItem('arsip_auth')) {
+            window.location.href = 'index.html';
+        }
+        
+        // Cek role (hanya admin yang bisa akses)
+        let currentUser = { role: 'guest' };
+        try {
+            const userData = localStorage.getItem('arsip_user');
+            if (userData) currentUser = JSON.parse(userData);
+        } catch(e) {}
+        
+        if (currentUser.role !== 'admin') {
+            alert('⚠️ Halaman ini hanya dapat diakses oleh Administrator!');
+            window.location.href = 'dashboard.html';
+        }
+        
+        // Global variables
+        let allUsers = [];
+        
+        // ==================================================
+        // LOAD DATA DENGAN CACHE
+        // ==================================================
+        async function loadUsers() {
+            // Tampilkan skeleton loading
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = `
+                <tr><td colspan="7"><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div></td></tr>
+            `;
+            
+            // Load dari cache dulu (INSTANT)
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+                allUsers = JSON.parse(cached);
+                renderTable();
+                renderStats();
+            }
+            
+            // Load dari API di background
+            try {
+                const response = await fetch(`${API_URL}?action=getUsers`);
+                const result = await response.json();
+                if (result.success && result.data && result.data.length > 0) {
+                    allUsers = result.data;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+                    renderTable();
+                    renderStats();
+                } else if (!cached || allUsers.length === 0) {
+                    // Data default jika kosong
+                    allUsers = [
+                        { username: 'admin', password: 'admin123', role: 'admin', nama: 'Administrator', email: 'admin@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'guru1', password: 'guru123', role: 'guru', nama: 'Ahmad Zaini, S.Pd', email: 'ahmad@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'guru2', password: 'guru456', role: 'guru', nama: 'Siti Fatimah, S.Ag', email: 'siti@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'bendahara', password: 'bendahara123', role: 'bendahara', nama: 'Bendahara MIS', email: 'bendahara@raudlatulhasan.sch.id', created_at: new Date().toISOString() }
+                    ];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+                    renderTable();
+                    renderStats();
+                }
+            } catch (error) {
+                console.log('API offline, menggunakan cache');
+                if (!cached || allUsers.length === 0) {
+                    allUsers = [
+                        { username: 'admin', password: 'admin123', role: 'admin', nama: 'Administrator', email: 'admin@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'guru1', password: 'guru123', role: 'guru', nama: 'Ahmad Zaini, S.Pd', email: 'ahmad@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'guru2', password: 'guru456', role: 'guru', nama: 'Siti Fatimah, S.Ag', email: 'siti@raudlatulhasan.sch.id', created_at: new Date().toISOString() },
+                        { username: 'bendahara', password: 'bendahara123', role: 'bendahara', nama: 'Bendahara MIS', email: 'bendahara@raudlatulhasan.sch.id', created_at: new Date().toISOString() }
+                    ];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+                    renderTable();
+                    renderStats();
+                }
+            }
+        }
+        
+        // ==================================================
+        // RENDER STATISTIK
+        // ==================================================
+        function renderStats() {
+            const totalUsers = allUsers.length;
+            const totalAdmin = allUsers.filter(u => u.role === 'admin').length;
+            const totalGuru = allUsers.filter(u => u.role === 'guru').length;
+            const totalBendahara = allUsers.filter(u => u.role === 'bendahara').length;
+            
+            document.getElementById('totalUsers').innerText = totalUsers;
+            document.getElementById('totalAdmin').innerText = totalAdmin;
+            document.getElementById('totalGuru').innerText = totalGuru;
+            document.getElementById('totalBendahara').innerText = totalBendahara;
+        }
+        
+        // ==================================================
+        // RENDER TABLE
+        // ==================================================
+        function renderTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredUsers = allUsers.filter(user => {
+                return user.username.toLowerCase().includes(searchTerm) || 
+                       (user.nama && user.nama.toLowerCase().includes(searchTerm));
+            });
+            
+            const tbody = document.getElementById('userTableBody');
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-12 text-gray-500">
+                            <i data-lucide="user-search" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                            <p>Tidak ada user</p>
+                            <button onclick="openTambahModal()" class="mt-3 text-pink-500 text-sm hover:underline">Tambah user baru</button>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            tbody.innerHTML = filteredUsers.map((user, index) => {
+                let roleClass = '';
+                let roleIcon = '';
+                if (user.role === 'admin') {
+                    roleClass = 'role-admin';
+                    roleIcon = '👑';
+                } else if (user.role === 'guru') {
+                    roleClass = 'role-guru';
+                    roleIcon = '👨‍🏫';
+                } else {
+                    roleClass = 'role-bendahara';
+                    roleIcon = '💰';
+                }
+                
+                return `
+                    <tr class="hover:bg-pink-50/50 transition">
+                        <td class="text-center">${index + 1}</td>
+                        <td class="font-mono text-sm font-medium">${escapeHtml(user.username)}</td>
+                        <td>${escapeHtml(user.nama) || '-'}</td>
+                        <td><span class="role-badge ${roleClass}">${roleIcon} ${user.role}</span></td>
+                        <td class="text-sm">${escapeHtml(user.email) || '-'}</td>
+                        <td class="text-sm text-gray-500">${user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                        <td class="text-center">
+                            <button onclick="editUser('${escapeHtml(user.username)}')" class="btn-edit mr-1">
+                                <i data-lucide="edit-2" class="w-3 h-3 inline"></i> Edit
+                            </button>
+                            ${user.username !== 'admin' ? `<button onclick="deleteUser('${escapeHtml(user.username)}')" class="btn-delete">
+                                <i data-lucide="trash-2" class="w-3 h-3 inline"></i> Hapus
+                            </button>` : '<span class="text-gray-400 text-xs">(protect)</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // ==================================================
+        // CRUD OPERATIONS
+        // ==================================================
+        function openTambahModal() {
+            document.getElementById('modalTitle').innerText = 'Tambah User';
+            document.getElementById('userForm').reset();
+            document.getElementById('originalUsername').value = '';
+            document.getElementById('username').disabled = false;
+            document.getElementById('password').required = true;
+            document.getElementById('userModal').classList.remove('hidden');
+            document.getElementById('userModal').classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        function editUser(username) {
+            const user = allUsers.find(u => u.username === username);
+            if (!user) return;
+            
+            document.getElementById('modalTitle').innerText = 'Edit User';
+            document.getElementById('originalUsername').value = user.username;
+            document.getElementById('username').value = user.username;
+            document.getElementById('username').disabled = true;
+            document.getElementById('password').value = '';
+            document.getElementById('password').required = false;
+            document.getElementById('password').placeholder = 'Kosongkan jika tidak ingin mengubah';
+            document.getElementById('nama').value = user.nama || '';
+            document.getElementById('role').value = user.role || 'guru';
+            document.getElementById('email').value = user.email || '';
+            
+            document.getElementById('userModal').classList.remove('hidden');
+            document.getElementById('userModal').classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        function closeModal() {
+            document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userModal').classList.remove('flex');
+            document.getElementById('username').disabled = false;
+            document.getElementById('password').required = true;
+            document.getElementById('password').placeholder = 'Minimal 6 karakter';
+        }
+        
+        async function saveUserToAPI(userData) {
+            try {
+                const response = await fetch(`${API_URL}?action=saveUser`, {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                });
+                return await response.json();
+            } catch(e) {
+                return { success: false, error: e.message };
+            }
+        }
+        
+        async function deleteUserFromAPI(username) {
+            try {
+                const response = await fetch(`${API_URL}?action=deleteUser&username=${encodeURIComponent(username)}`);
+                return await response.json();
+            } catch(e) {
+                return { success: false };
+            }
+        }
+        
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const originalUsername = document.getElementById('originalUsername').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const nama = document.getElementById('nama').value;
+            const role = document.getElementById('role').value;
+            const email = document.getElementById('email').value;
+            
+            if (!username) {
+                showToast('Username harus diisi!', 'error');
+                return;
+            }
+            
+            if (!originalUsername && !password) {
+                showToast('Password harus diisi untuk user baru!', 'error');
+                return;
+            }
+            
+            const userData = {
+                username: username,
+                password: password,
+                nama: nama,
+                role: role,
+                email: email
+            };
+            
+            // Simpan ke API (background)
+            const result = await saveUserToAPI(userData);
+            
+            // Simpan ke lokal
+            if (originalUsername) {
+                // Edit existing
+                const index = allUsers.findIndex(u => u.username === originalUsername);
+                if (index !== -1) {
+                    if (password) userData.password = password;
+                    else userData.password = allUsers[index].password;
+                    allUsers[index] = { ...allUsers[index], ...userData };
+                }
+            } else {
+                // Add new
+                userData.created_at = new Date().toISOString();
+                allUsers.push(userData);
+            }
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+            closeModal();
+            renderTable();
+            renderStats();
+            
+            showToast(result.success ? 'User berhasil disimpan!' : 'User disimpan secara lokal', result.success ? 'success' : 'warning');
+        });
+        
+        async function deleteUser(username) {
+            if (username === 'admin') {
+                showToast('User Admin tidak dapat dihapus!', 'error');
+                return;
+            }
+            
+            if (confirm(`Yakin ingin menghapus user "${username}"?`)) {
+                const result = await deleteUserFromAPI(username);
+                allUsers = allUsers.filter(u => u.username !== username);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+                renderTable();
+                renderStats();
+                showToast(result.success ? 'User berhasil dihapus!' : 'User dihapus secara lokal', 'success');
+            }
+        }
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+        
+        // ==================================================
+        // TOAST NOTIFICATION
+        // ==================================================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast px-5 py-3 rounded-xl text-white font-medium shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            toast.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${message}</span></div>`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ==================================================
+        // SEARCH HANDLER
+        // ==================================================
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderTable();
+        });
+        
+        // ==================================================
+        // LOGOUT & MENU TOGGLE
+        // ==================================================
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
+        
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // ==================================================
+        // INITIALIZE
+        // ==================================================
+        loadUsers();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
